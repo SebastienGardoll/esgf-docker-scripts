@@ -1,0 +1,25 @@
+export ESGF_CONFIG_DIRNAME='esgf_config'
+export DOCKER_HOME='/home/seb/docker'
+export DOCKER_GIT_DIR_PATH='/home/seb/Documents/dev/esgf-docker'
+
+export ESGF_HOSTNAME=`hostname`
+export ESGF_CONFIG="${DOCKER_HOME}/${ESGF_CONFIG_DIRNAME}"
+export ESGF_DATA_DIR="${DOCKER_HOME}/data"
+export ESGF_VERSION=devel-sg
+export ESGF_IMAGES_HUB="esgfhub"
+export ESGF_REPO=http://distrib-coffee.ipsl.jussieu.fr/pub/esgf 
+
+export SWARN_MANAGER_HOSTNAME=`hostname`
+export IP_SWARM_MANAGER='134.157.179.182'
+export NODE0='vesgdev-docker1.ipsl.upmc.fr'
+export NODE1='vesgdev-docker2.ipsl.upmc.fr'
+
+NODE_NAMES[0]="${NODE0}"
+NODE_NAMES[1]="${NODE1}"
+
+NODE_MAX_INDEX=$(( ${#NODE_NAMES[*]}-1 ))
+
+export DEFAULT_PORT=2377
+
+FALSE='false'
+TRUE='true'
