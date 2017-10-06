@@ -15,7 +15,7 @@ readonly ARCHIVE_FILE_PATH="${SCRIPT_PARENT_DIR_PATH}/${ARCHIVE_FILENAME}"
 
 ############################ CONTROL VARIABLES #################################
 
-is_standalone="${1-false}"
+
 
 ################################ FUNCTIONS #####################################
 
@@ -57,22 +57,11 @@ docker-machine ssh node0 "docker node update --label-add esgf_data_node=true nod
 
 ################################## MAIN ########################################
 
-systemctl --no-pager status docker > /dev/null
-
-if [ $? -ne 0 ]; then
-  echo "> starting docker"
-  sudo service docker start
-fi
-
 echo "> init configuration"
 "${DOCKER_GIT_DIR_PATH}/scripts/esgf_node_init.sh"
 chmod go= "${ESGF_CONFIG}"
 
-if [[ "${is_standalone}" = "${TRUE}" ]]; then
-  startup_standalone
-else
-  startup_cluster
-fi
+startup_cluster
 
 eval $(docker-machine env node0)
 
