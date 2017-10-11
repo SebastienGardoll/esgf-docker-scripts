@@ -20,31 +20,31 @@ is_standalone="${1-false}"
 ################################ FUNCTIONS #####################################
 
 function startup_cluster {
-for node_index in `seq 0 ${NODE_MAX_INDEX}`;
-do
-  echo "> clean ${NODE_NAMES[${node_index}]}"
-  ssh root@${NODE_NAMES[${node_index}]} "rm -fr ${DOCKER_HOME}"
-done
+#for node_index in `seq 0 ${NODE_MAX_INDEX}`;
+#do
+#  echo "> clean ${NODE_NAMES[${node_index}]}"
+#  ssh root@${NODE_NAMES[${node_index}]} "rm -fr ${DOCKER_HOME}"
+#done
 
-rm -f "${ARCHIVE_FILE_PATH}"
+#rm -f "${ARCHIVE_FILE_PATH}"
 
-pushd "${DOCKER_HOME}" > /dev/null
+#pushd "${DOCKER_HOME}" > /dev/null
 
-echo "> create the configuration archive"
-tar --owner=0 --group=0 -pcJvf "${ARCHIVE_FILE_PATH}" "${ESGF_CONFIG_DIRNAME}" > /dev/null
+#echo "> create the configuration archive"
+#tar --owner=0 --group=0 -pcJvf "${ARCHIVE_FILE_PATH}" "${ESGF_CONFIG_DIRNAME}" > /dev/null
 
-for node_index in `seq 0 ${NODE_MAX_INDEX}`;
-do
-  echo "> copy the configuration"
-  ssh root@${NODE_NAMES[${node_index}]} "mkdir -p ${DOCKER_HOME} ; chmod go= ${DOCKER_HOME}"
-  scp "${ARCHIVE_FILE_PATH}" root@${NODE_NAMES[${node_index}]}:${DOCKER_HOME}
-  echo "> extract the configuration"
-  ssh root@${NODE_NAMES[${node_index}]} "tar -xavf ${DOCKER_HOME}/${ARCHIVE_FILENAME} -C ${DOCKER_HOME} > /dev/null"
-done
+#for node_index in `seq 0 ${NODE_MAX_INDEX}`;
+#do
+#  echo "> copy the configuration"
+#  ssh root@${NODE_NAMES[${node_index}]} "mkdir -p ${DOCKER_HOME} ; chmod go= ${DOCKER_HOME}"
+#  scp "${ARCHIVE_FILE_PATH}" root@${NODE_NAMES[${node_index}]}:${DOCKER_HOME}
+#  echo "> extract the configuration"
+#  ssh root@${NODE_NAMES[${node_index}]} "tar -xavf ${DOCKER_HOME}/${ARCHIVE_FILENAME} -C ${DOCKER_HOME} > /dev/null"
+#done
 
-rm "${ARCHIVE_FILE_PATH}"
+#rm "${ARCHIVE_FILE_PATH}"
 
-popd > /dev/null
+#popd > /dev/null
 
 echo "> start swarm manager"
 docker swarm init
