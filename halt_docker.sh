@@ -34,5 +34,5 @@ docker ps -aq |xargs docker rm
 echo "> delete the volumes"
 docker volume ls -q | xargs docker volume rm --force
 
-echo "> stop docker daemon"
-sudo service docker stop
+#echo "> stop docker daemon"
+#sudo service docker stop
