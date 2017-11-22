@@ -15,7 +15,7 @@ readonly ARCHIVE_FILE_PATH="${SCRIPT_PARENT_DIR_PATH}/${ARCHIVE_FILENAME}"
 
 ############################ CONTROL VARIABLES #################################
 
-is_standalone="${1-false}"
+is_standalone="${1-true}" 
 
 ################################ FUNCTIONS #####################################
 
@@ -45,7 +45,7 @@ function startup_cluster {
 #rm "${ARCHIVE_FILE_PATH}"
 
 #popd > /dev/null
-
+echo "> start in cluster mode"
 echo "> start swarm manager"
 docker swarm init
 swarm_token="$(docker swarm join-token -q worker)"
@@ -68,6 +68,7 @@ docker node update --label-add esgf_data_node=true $NODE1
 }
 
 function startup_standalone {
+ echo "> start in standalone mode"
  echo "> start swarm manager"
  docker swarm init
  swarm_token="$(docker swarm join-token -q worker)" 
@@ -100,5 +101,7 @@ else
 fi
 
 docker stack deploy -c "${DOCKER_GIT_DIR_PATH}/docker-stack.yml" esgf-stack
+
+echo 'watch -n 1 docker service ls'
 
 watch -n 1 docker service ls

@@ -8,7 +8,7 @@ source "${SCRIPT_PARENT_DIR_PATH}/set_env"
 
 set -u
 
-is_standalone="${1-false}"
+is_standalone="${1-true}"
 
 echo "> stop esgf stack"
 docker stack rm esgf-stack
