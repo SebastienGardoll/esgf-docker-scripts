@@ -8,25 +8,54 @@ source "${SCRIPT_PARENT_DIR_PATH}/set_env"
 
 set -u
 
-is_standalone="${1-true}"
+function usage
+{
+  echo "standalone | cluster | remote"
+}
+
+# standalone (default) | cluster (swarm master @node0)
+# | remote (swarm master @desktop worker@cluster)
+mode="${1-standalone}" 
+
+case "${mode}" in
+  "standalone") echo -e "**** run in standalone mode ****\n" ;;
+  "cluster") echo -e "**** run in cluster mode ****\n" ;;
+  "remote") echo -e "**** run in remote mode ****\n" ;;
+  *) echo "#### unsupported '${mode}' mode. Abort ####"
+     usage
+     exit 1;;
+esac
 
 echo "> stop esgf stack"
 docker stack rm esgf-stack
 
 sleep 5
 
-if [[ "${is_standalone}" = "${FALSE}" ]]; then
+if [[ "${mode}" != "standalone" ]]; then
+  
+  case "${mode}" in 
+    "cluster") starting_node=1 ;;
+    "remote") starting_node=0 ;;
+    *) echo "#### unsupported '${mode}' mode. Abort ####"
+       usage
+       exit 1;;
+  esac
+    
   echo "> stop docker on cluster nodes"
-  for node_index in `seq 0 ${NODE_MAX_INDEX}`;
+  for node_index in `seq ${starting_node} ${NODE_MAX_INDEX}`;
   do
-    #ssh root@${NODE_NAMES[${node_index}]} 'docker ps -aq |xargs docker rm'
-    #ssh root@${NODE_NAMES[${node_index}]} 'docker volume ls -q | xargs docker volume rm --force'
+    ssh root@${NODE_NAMES[${node_index}]} 'docker ps -aq |xargs docker stop -t 1'
+    ssh root@${NODE_NAMES[${node_index}]} 'docker ps -aq |xargs docker rm'
+    ssh root@${NODE_NAMES[${node_index}]} 'docker volume ls -q | xargs docker volume rm --force'
     ssh root@${NODE_NAMES[${node_index}]} 'docker swarm leave ; service docker stop'
   done
 fi
 
 echo "> leave swarm cluster"
 docker swarm leave --force
+
+echo "> stop the containers"
+docker ps -aq |xargs docker stop -t 1
 
 echo "> delete the containers"
 docker ps -aq |xargs docker rm

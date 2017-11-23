@@ -15,43 +15,24 @@ readonly ARCHIVE_FILE_PATH="${SCRIPT_PARENT_DIR_PATH}/${ARCHIVE_FILENAME}"
 
 ############################ CONTROL VARIABLES #################################
 
-is_standalone="${1-true}" 
+# standalone (default) | cluster (swarm master @node0)
+# | remote (swarm master @desktop worker@cluster)
+mode="${1-standalone}" 
 
 ################################ FUNCTIONS #####################################
 
-function startup_cluster {
-#for node_index in `seq 0 ${NODE_MAX_INDEX}`;
-#do
-#  echo "> clean ${NODE_NAMES[${node_index}]}"
-#  ssh root@${NODE_NAMES[${node_index}]} "rm -fr ${DOCKER_HOME}"
-#done
+function usage
+{
+  echo "standalone | cluster | remote"
+}
 
-#rm -f "${ARCHIVE_FILE_PATH}"
-
-#pushd "${DOCKER_HOME}" > /dev/null
-
-#echo "> create the configuration archive"
-#tar --owner=0 --group=0 -pcJvf "${ARCHIVE_FILE_PATH}" "${ESGF_CONFIG_DIRNAME}" > /dev/null
-
-#for node_index in `seq 0 ${NODE_MAX_INDEX}`;
-#do
-#  echo "> copy the configuration"
-#  ssh root@${NODE_NAMES[${node_index}]} "mkdir -p ${DOCKER_HOME} ; chmod go= ${DOCKER_HOME}"
-#  scp "${ARCHIVE_FILE_PATH}" root@${NODE_NAMES[${node_index}]}:${DOCKER_HOME}
-#  echo "> extract the configuration"
-#  ssh root@${NODE_NAMES[${node_index}]} "tar -xavf ${DOCKER_HOME}/${ARCHIVE_FILENAME} -C ${DOCKER_HOME} > /dev/null"
-#done
-
-#rm "${ARCHIVE_FILE_PATH}"
-
-#popd > /dev/null
-echo "> start in cluster mode"
+function startup_cluster_remote {
 echo "> start swarm manager"
 docker swarm init
 swarm_token="$(docker swarm join-token -q worker)"
 #docker node update --availability drain "${SWARN_MANAGER_HOSTNAME}"
 
-for node_index in `seq 0 ${NODE_MAX_INDEX}`;
+for node_index in `seq $1 ${NODE_MAX_INDEX}`;
 do
   
   echo "> add ${NODE_NAMES[${node_index}]} to the swarm cluster"
@@ -68,7 +49,6 @@ docker node update --label-add esgf_data_node=true $NODE1
 }
 
 function startup_standalone {
- echo "> start in standalone mode"
  echo "> start swarm manager"
  docker swarm init
  swarm_token="$(docker swarm join-token -q worker)" 
@@ -83,6 +63,15 @@ function startup_standalone {
 
 ################################## MAIN ########################################
 
+case "${mode}" in
+  "standalone") echo -e "**** run in standalone mode ****\n" ;;
+  "cluster") echo -e "**** run in cluster mode ****\n" ;;
+  "remote") echo -e "**** run in remote mode ****\n" ;;
+  *) echo "#### unsupported '${mode}' mode. Abort ####"
+     usage
+     exit 1;;
+esac
+
 systemctl --no-pager status docker > /dev/null
 
 if [ $? -ne 0 ]; then
@@ -94,11 +83,14 @@ echo "> init configuration"
 "${DOCKER_GIT_DIR_PATH}/scripts/esgf_node_init.sh"
 chmod go= "${ESGF_CONFIG}"
 
-if [[ "${is_standalone}" = "${TRUE}" ]]; then
-  startup_standalone
-else
-  startup_cluster
-fi
+case "${mode}" in
+  "standalone") startup_standalone ;;
+  "cluster") startup_cluster_remote 1 ;;
+  "remote") startup_cluster_remote 0 ;;
+  *) echo "#### unsupported '${mode}' mode. Abort ####"
+     usage
+     exit 1;;
+esac
 
 docker stack deploy -c "${DOCKER_GIT_DIR_PATH}/docker-stack.yml" esgf-stack
 
