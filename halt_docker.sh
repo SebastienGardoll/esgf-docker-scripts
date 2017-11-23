@@ -44,24 +44,30 @@ if [[ "${mode}" != "standalone" ]]; then
   echo "> stop docker on cluster nodes"
   for node_index in `seq ${starting_node} ${NODE_MAX_INDEX}`;
   do
-    ssh root@${NODE_NAMES[${node_index}]} 'docker ps -aq |xargs docker stop -t 1'
-    ssh root@${NODE_NAMES[${node_index}]} 'docker ps -aq |xargs docker rm'
-    ssh root@${NODE_NAMES[${node_index}]} 'docker volume ls -q | xargs docker volume rm --force'
-    ssh root@${NODE_NAMES[${node_index}]} 'docker swarm leave ; service docker stop'
+    ssh root@${NODE_NAMES[${node_index}]} 'echo "  > stop containers" ; docker ps -aq |xargs docker stop -t 1'
+    ssh root@${NODE_NAMES[${node_index}]} 'echo "  > delete containers" ; docker ps -aq |xargs docker rm'
+    ssh root@${NODE_NAMES[${node_index}]} 'echo "  > delete volumes" ; docker volume ls -q | xargs docker volume rm --force'
+    ssh root@${NODE_NAMES[${node_index}]} 'echo "  > quit swarm & stop docker daemon" ;docker swarm leave ; service docker stop'
   done
 fi
 
 echo "> leave swarm cluster"
 docker swarm leave --force
 
-echo "> stop the containers"
-docker ps -aq |xargs docker stop -t 1
+return_code=$(docker ps -aq |wc -l)
+if [ ${return_code} -gt 0 ]; then
+  echo "> stop the containers"
+  docker ps -aq |xargs docker stop -t 1
 
-echo "> delete the containers"
-docker ps -aq |xargs docker rm
+  echo "> delete the containers"
+  docker ps -aq |xargs docker rm
+fi
 
-echo "> delete the volumes"
-docker volume ls -q | xargs docker volume rm --force
+return_code=$(docker volume ls -q |wc -l)
+if [ ${return_code} -gt 0 ]; then
+  echo "> delete the volumes"
+  docker volume ls -q | xargs docker volume rm --force
+fi
 
 #echo "> stop docker daemon"
 #sudo service docker stop
