@@ -7,6 +7,8 @@ export ESGF_CONFIG="${DOCKER_HOME}/${ESGF_CONFIG_DIRNAME}"
 export ESGF_DATA_DIR="${DOCKER_HOME}/data"
 export ESGF_VERSION="latest"
 export ESGF_IMAGES_HUB="esgfhub"
+export ESGF_HUB=${ESGF_IMAGES_HUB}
+
 export ESGF_REPO=http://distrib-coffee.ipsl.jussieu.fr/pub/esgf 
 
 export SWARN_MANAGER_HOSTNAME=`hostname`
