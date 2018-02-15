@@ -10,9 +10,6 @@ set -u
 
 source "${SCRIPT_PARENT_DIR_PATH}/set_env"
 
-readonly ARCHIVE_FILENAME='config.tar.xz'
-readonly ARCHIVE_FILE_PATH="${SCRIPT_PARENT_DIR_PATH}/${ARCHIVE_FILENAME}"
-
 ############################ CONTROL VARIABLES #################################
 
 # standalone (default) | cluster (swarm master @node0)
@@ -80,8 +77,13 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "> init configuration"
-"${DOCKER_GIT_DIR_PATH}/scripts/esgf_node_init.sh"
-chmod go= "${ESGF_CONFIG}"
+
+rm -fr "${ESGF_CONFIG}"
+docker run -v "$ESGF_CONFIG":/esg -e ESGF_HOSTNAME cedadev/esgf-setup generate-secrets
+docker run -v "$ESGF_CONFIG":/esg -e ESGF_HOSTNAME cedadev/esgf-setup generate-test-certificates
+docker run -v "$ESGF_CONFIG":/esg -e ESGF_HOSTNAME cedadev/esgf-setup create-trust-bundles
+
+#chmod go= "${ESGF_CONFIG}"
 
 case "${mode}" in
   "standalone") startup_standalone ;;

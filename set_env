@@ -1,12 +1,12 @@
 export ESGF_CONFIG_DIRNAME='esgf_config'
 export DOCKER_HOME='/home/seb/docker'
-export DOCKER_GIT_DIR_PATH='/home/seb/Documents/dev/esgf-docker'
+export DOCKER_GIT_DIR_PATH='/home/seb/Documents/dev/esgf-docker-ceda-fork'
 
 export ESGF_HOSTNAME=`hostname`
 export ESGF_CONFIG="${DOCKER_HOME}/${ESGF_CONFIG_DIRNAME}"
 export ESGF_DATA_DIR="${DOCKER_HOME}/data"
 export ESGF_VERSION="latest"
-export ESGF_IMAGES_HUB="esgfhub"
+export ESGF_IMAGES_HUB="cedadev"
 export ESGF_HUB=${ESGF_IMAGES_HUB}
 
 export ESGF_REPO=http://distrib-coffee.ipsl.jussieu.fr/pub/esgf 
